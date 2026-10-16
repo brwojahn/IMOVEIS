@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#b42332">
+  <meta name="description" content="Painel interno de gestão de imóveis da imobiliária CasaNova.">
+  <title>Gestão de imóveis</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-right">
+      <select id="operation-select" aria-label="Escolha uma operação CRUD">
+        <option value="search">GET · Buscar</option>
+        <option value="get-id">GET por ID</option>
+        <option value="post">POST · Cadastrar imóvel</option>
+        <option value="delete">DELETE · Excluir imóvel</option>
+      </select>
+    </div>
+  </header>
+
+  <main id="home" class="page-shell">
+    <section class="welcome-row">
+      <div>
+        <h1>Carteira de imóveis</h1>
+        <p class="intro">Encontre um imóvel, consulte a situação e mantenha os dados atualizados.</p>
+      </div>
+    </section>
+
+    <section id="operation-panel" class="operation-panel" aria-live="polite"></section>
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+    <section class="listings-section" aria-labelledby="listings-title">
+      <div class="section-heading">
+        <div>
+          <p class="overline">VISÃO GERAL DA IMOBILIÁRIA</p>
+          <h2 id="listings-title">Imóveis cadastrados <span id="listing-count" class="count-badge">0</span></h2>
+          <p id="listings-caption" class="section-caption">Selecione Buscar para carregar e pesquisar os imóveis.</p>
+        </div>
+        <button id="load-all-button" class="button button-outline" type="button"><span aria-hidden="true">↻</span> Carregar todos os imóveis</button>
+      </div>
+      <div id="property-grid" class="property-grid" aria-live="polite">
+        <div class="empty-state"><span class="empty-icon" aria-hidden="true">⌕</span><h3>Aguardando busca</h3><p>Selecione <strong>GET · Buscar</strong> ou carregue todos os imóveis para ver a carteira.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="property-dialog" class="property-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-topline"></div>
+    <div class="dialog-content">
+      <div class="dialog-heading">
+        <div><p class="overline">DETALHES DO IMÓVEL</p><h2 id="dialog-title">Imóvel</h2><p id="dialog-address" class="dialog-address"></p></div>
+        <button id="close-dialog" class="close-button" type="button" aria-label="Fechar detalhes do imóvel">×</button>
+      </div>
+      <div id="property-view">
+        <div id="dialog-badges" class="badge-row"></div>
+        <div id="dialog-facts" class="fact-grid"></div>
+        <section class="detail-section"><h3>Descrição</h3><p id="dialog-description" class="description-copy"></p></section>
+        <section id="rental-section" class="detail-section" hidden><h3>Locação atual</h3><div id="rental-details" class="rental-box"></div></section>
+        <section class="detail-section"><div class="task-heading"><h3>Pendências</h3><span id="task-count" class="task-count"></span></div><div id="task-list" class="task-list"><p class="muted-copy">Carregando tarefas do imóvel…</p></div></section>
+        <div class="dialog-actions"><button id="edit-property-button" class="button button-primary" type="button">Editar imóvel</button></div>
+      </div>
+      <div id="dialog-edit-form" hidden></div>
+    </div>
+  </dialog>
+</body>
+</html>
