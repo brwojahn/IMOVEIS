@@ -16,12 +16,13 @@ async function listarImoveis(req, res) {
   const tipo = req.query.property_type;
   const tiposPermitidos = ['House', 'Apartment', 'Commercial', 'Land'];
   if (filtro && !['for-sale', 'renting', 'sold', 'inactive'].includes(filtro)) {
-    return res.status(400).json({ mensagem: 'Unknown property filter. Use for-sale, renting, sold, or inactive.' });
+    return res.status(400).json({ mensagem: 'Filtro de imóvel desconhecido. Use for-sale (à venda), renting (alugados), sold (vendidos) ou inactive (inativos).' });
   }
   if (tipo && !tiposPermitidos.includes(tipo)) {
-    return res.status(400).json({ mensagem: `property_type must be one of: ${tiposPermitidos.join(', ')}.` });
+    return res.status(400).json({ mensagem: `O tipo do imóvel deve ser um destes: ${tiposPermitidos.join(', ')}.` });
   }
 
+  //consultas sql para os filtros
   const condicoes = [];
   const parametros = [];
   if (filtro === 'for-sale') condicoes.push("p.is_for_sale = TRUE AND p.status = 'Active'");
@@ -52,7 +53,6 @@ async function listarImoveis(req, res) {
     LEFT JOIN renters r ON r.id = rc.renter_id
     ${condicoes.length ? `WHERE ${condicoes.join(' AND ')}` : ''}
     ORDER BY p.id DESC`;
-
   try {
     const [imoveis] = await pool.query(consulta, parametros);
     return res.status(200).json(imoveis);
@@ -63,11 +63,10 @@ async function listarImoveis(req, res) {
 
 async function buscarImovelPorId(req, res) {
   const id = validarIdImovel(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The property ID must be a positive integer.' });
-
+  if (!id) return res.status(400).json({ mensagem: 'O ID do imóvel deve ser um número inteiro positivo.' });
   try {
     const [imoveis] = await pool.query('SELECT * FROM properties WHERE id = ?', [id]);
-    if (imoveis.length === 0) return res.status(404).json({ mensagem: 'Property not found.' });
+    if (imoveis.length === 0) return res.status(404).json({ mensagem: 'Imóvel não encontrado.' });
     return res.status(200).json(imoveis[0]);
   } catch (erro) {
     return respostaErro(res, 'buscar', erro);
@@ -95,12 +94,12 @@ async function cadastrarImovel(req, res) {
 
 async function atualizarImovel(req, res) {
   const id = validarIdImovel(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The property ID must be a positive integer.' });
+  if (!id) return res.status(400).json({ mensagem: 'O ID do imóvel deve ser um número inteiro positivo.' });
   const dados = req.body;
 
   try {
     const [existentes] = await pool.query('SELECT id FROM properties WHERE id = ?', [id]);
-    if (existentes.length === 0) return res.status(404).json({ mensagem: 'Property not found.' });
+    if (existentes.length === 0) return res.status(404).json({ mensagem: 'Imóvel não encontrado.' });
     await pool.query(
       `UPDATE properties SET title = ?, address = ?, city = ?, state = ?, postal_code = ?,
        property_type = ?, is_for_sale = ?, sale_price = ?, bedrooms = ?, bathrooms = ?,
@@ -118,15 +117,15 @@ async function atualizarImovel(req, res) {
 
 async function excluirImovel(req, res) {
   const id = validarIdImovel(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The property ID must be a positive integer.' });
+  if (!id) return res.status(400).json({ mensagem: 'O ID do imóvel deve ser um número inteiro positivo.' });
 
   try {
     const [resultado] = await pool.query('DELETE FROM properties WHERE id = ?', [id]);
-    if (resultado.affectedRows === 0) return res.status(404).json({ mensagem: 'Property not found.' });
-    return res.status(200).json({ mensagem: 'Property deleted successfully.' });
+    if (resultado.affectedRows === 0) return res.status(404).json({ mensagem: 'Imóvel não encontrado.' });
+    return res.status(200).json({ mensagem: 'Imóvel excluído com sucesso.' });
   } catch (erro) {
     if (erro.code === 'ER_ROW_IS_REFERENCED_2') {
-      return res.status(409).json({ mensagem: 'This property has rental contract history and cannot be deleted.' });
+      return res.status(409).json({ mensagem: 'Este imóvel possui histórico de contratos de locação e não pode ser excluído.' });
     }
     return respostaErro(res, 'excluir', erro);
   }
@@ -145,13 +144,13 @@ async function listarTarefas(req, res) {
   const values = [];
   if (req.query.property_id !== undefined) {
     const propertyId = validarIdTarefa(req.query.property_id);
-    if (!propertyId) return res.status(400).json({ mensagem: 'property_id must be a positive integer.' });
+    if (!propertyId) return res.status(400).json({ mensagem: 'O ID do imóvel deve ser um número inteiro positivo.' });
     conditions.push('t.property_id = ?');
     values.push(propertyId);
   }
   if (req.query.status !== undefined) {
     if (!['Open', 'In Progress', 'Completed'].includes(req.query.status)) {
-      return res.status(400).json({ mensagem: 'status must be Open, In Progress, or Completed.' });
+      return res.status(400).json({ mensagem: 'O status deve ser Open (aberta), In Progress (em andamento) ou Completed (concluída).' });
     }
     conditions.push('t.status = ?');
     values.push(req.query.status);
@@ -167,10 +166,10 @@ async function listarTarefas(req, res) {
 
 async function buscarTarefaPorId(req, res) {
   const id = validarIdTarefa(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The task ID must be a positive integer.' });
+  if (!id) return res.status(400).json({ mensagem: 'O ID da tarefa deve ser um número inteiro positivo.' });
   try {
     const [tarefas] = await pool.query(`${selectTarefa} WHERE t.id = ?`, [id]);
-    if (tarefas.length === 0) return res.status(404).json({ mensagem: 'Task not found.' });
+    if (tarefas.length === 0) return res.status(404).json({ mensagem: 'Tarefa não encontrada.' });
     return res.status(200).json(tarefas[0]);
   } catch (erro) {
     console.log('Erro ao buscar tarefa: ', erro);
@@ -181,7 +180,7 @@ async function buscarTarefaPorId(req, res) {
 async function validarImovelDaTarefa(propertyId, res) {
   const [imoveis] = await pool.query('SELECT id FROM properties WHERE id = ?', [propertyId]);
   if (imoveis.length === 0) {
-    res.status(404).json({ mensagem: 'Property not found.' });
+    res.status(404).json({ mensagem: 'Imóvel não encontrado.' });
     return false;
   }
   return true;
@@ -197,7 +196,7 @@ async function cadastrarTarefa(req, res) {
       [dados.property_id, dados.title, dados.description, dados.priority, dados.due_date, dados.status]
     );
     const [tarefas] = await pool.query(`${selectTarefa} WHERE t.id = ?`, [resultado.insertId]);
-    return res.status(201).json({ mensagem: 'Task created successfully.', tarefa: tarefas[0] });
+    return res.status(201).json({ mensagem: 'Tarefa cadastrada com sucesso.', tarefa: tarefas[0] });
   } catch (erro) {
     console.log('Erro ao cadastrar tarefa: ', erro);
     return res.status(500).json({ mensagem: 'Erro ao cadastrar tarefa.' });
@@ -206,11 +205,11 @@ async function cadastrarTarefa(req, res) {
 
 async function atualizarTarefa(req, res) {
   const id = validarIdTarefa(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The task ID must be a positive integer.' });
+  if (!id) return res.status(400).json({ mensagem: 'O ID da tarefa deve ser um número inteiro positivo.' });
   const dados = req.body;
   try {
     const [existentes] = await pool.query('SELECT id FROM property_tasks WHERE id = ?', [id]);
-    if (existentes.length === 0) return res.status(404).json({ mensagem: 'Task not found.' });
+    if (existentes.length === 0) return res.status(404).json({ mensagem: 'Tarefa não encontrada.' });
     if (!await validarImovelDaTarefa(dados.property_id, res)) return;
     await pool.query(
       `UPDATE property_tasks SET property_id = ?, title = ?, description = ?, priority = ?, due_date = ?, status = ?
@@ -218,7 +217,7 @@ async function atualizarTarefa(req, res) {
       [dados.property_id, dados.title, dados.description, dados.priority, dados.due_date, dados.status, id]
     );
     const [tarefas] = await pool.query(`${selectTarefa} WHERE t.id = ?`, [id]);
-    return res.status(200).json({ mensagem: 'Task updated successfully.', tarefa: tarefas[0] });
+    return res.status(200).json({ mensagem: 'Tarefa atualizada com sucesso.', tarefa: tarefas[0] });
   } catch (erro) {
     console.log('Erro ao atualizar tarefa: ', erro);
     return res.status(500).json({ mensagem: 'Erro ao atualizar tarefa.' });
@@ -227,11 +226,11 @@ async function atualizarTarefa(req, res) {
 
 async function excluirTarefa(req, res) {
   const id = validarIdTarefa(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The task ID must be a positive integer.' });
+  if (!id) return res.status(400).json({ mensagem: 'O ID da tarefa deve ser um número inteiro positivo.' });
   try {
     const [resultado] = await pool.query('DELETE FROM property_tasks WHERE id = ?', [id]);
-    if (resultado.affectedRows === 0) return res.status(404).json({ mensagem: 'Task not found.' });
-    return res.status(200).json({ mensagem: 'Task deleted successfully.' });
+    if (resultado.affectedRows === 0) return res.status(404).json({ mensagem: 'Tarefa não encontrada.' });
+    return res.status(200).json({ mensagem: 'Tarefa excluída com sucesso.' });
   } catch (erro) {
     console.log('Erro ao excluir tarefa: ', erro);
     return res.status(500).json({ mensagem: 'Erro ao excluir tarefa.' });
@@ -264,7 +263,7 @@ async function listarContratos(req, res) {
   for (const field of ['property_id', 'renter_id']) {
     if (req.query[field] === undefined) continue;
     const id = validarIdContrato(req.query[field]);
-    if (!id) return res.status(400).json({ mensagem: `${field} must be a positive integer.` });
+    if (!id) return res.status(400).json({ mensagem: `O campo ${field} deve ser um número inteiro positivo.` });
     conditions.push(`rc.${field} = ?`);
     values.push(id);
   }
@@ -279,10 +278,10 @@ async function listarContratos(req, res) {
 
 async function buscarContratoPorId(req, res) {
   const id = validarIdContrato(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The contract ID must be a positive integer.' });
+  if (!id) return res.status(400).json({ mensagem: 'O ID do contrato deve ser um número inteiro positivo.' });
   try {
     const [contratos] = await pool.query(`${selectContrato} WHERE rc.id = ?`, [id]);
-    if (contratos.length === 0) return res.status(404).json({ mensagem: 'Rental contract not found.' });
+    if (contratos.length === 0) return res.status(404).json({ mensagem: 'Contrato de locação não encontrado.' });
     return res.status(200).json(contratos[0]);
   } catch (erro) {
     console.log('Erro ao buscar contrato: ', erro);
@@ -293,16 +292,16 @@ async function buscarContratoPorId(req, res) {
 async function validarRelacoesDoContrato(dados, res) {
   const [imoveis] = await pool.query('SELECT status FROM properties WHERE id = ?', [dados.property_id]);
   if (imoveis.length === 0) {
-    res.status(404).json({ mensagem: 'Property not found.' });
+    res.status(404).json({ mensagem: 'Imóvel não encontrado.' });
     return false;
   }
   if (imoveis[0].status !== 'Active') {
-    res.status(409).json({ mensagem: 'Rental contracts can only be linked to active properties.' });
+    res.status(409).json({ mensagem: 'Contratos de locação só podem ser vinculados a imóveis ativos.' });
     return false;
   }
   const [locatarios] = await pool.query('SELECT id FROM renters WHERE id = ?', [dados.renter_id]);
   if (locatarios.length === 0) {
-    res.status(404).json({ mensagem: 'Renter not found.' });
+    res.status(404).json({ mensagem: 'Locatário não encontrado.' });
     return false;
   }
   return true;
@@ -326,7 +325,7 @@ async function cadastrarContrato(req, res) {
   try {
     if (!await validarRelacoesDoContrato(dados, res)) return;
     if (await temConflitoDeContrato(dados)) {
-      return res.status(409).json({ mensagem: 'This property already has an overlapping active rental contract.' });
+      return res.status(409).json({ mensagem: 'Este imóvel já possui um contrato de locação ativo em período coincidente.' });
     }
     const [resultado] = await pool.query(
       `INSERT INTO rental_contracts (property_id, renter_id, start_date, end_date, monthly_rent, status, notes)
@@ -334,7 +333,7 @@ async function cadastrarContrato(req, res) {
       [dados.property_id, dados.renter_id, dados.start_date, dados.end_date, dados.monthly_rent, dados.status, dados.notes]
     );
     const [contratos] = await pool.query(`${selectContrato} WHERE rc.id = ?`, [resultado.insertId]);
-    return res.status(201).json({ mensagem: 'Rental contract created successfully.', contrato: contratos[0] });
+    return res.status(201).json({ mensagem: 'Contrato de locação cadastrado com sucesso.', contrato: contratos[0] });
   } catch (erro) {
     console.log('Erro ao cadastrar contrato: ', erro);
     return res.status(500).json({ mensagem: 'Erro ao cadastrar contrato.' });
@@ -343,14 +342,14 @@ async function cadastrarContrato(req, res) {
 
 async function atualizarContrato(req, res) {
   const id = validarIdContrato(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The contract ID must be a positive integer.' });
+  if (!id) return res.status(400).json({ mensagem: 'O ID do contrato deve ser um número inteiro positivo.' });
   const dados = req.body;
   try {
     const [existentes] = await pool.query('SELECT id FROM rental_contracts WHERE id = ?', [id]);
-    if (existentes.length === 0) return res.status(404).json({ mensagem: 'Rental contract not found.' });
+    if (existentes.length === 0) return res.status(404).json({ mensagem: 'Contrato de locação não encontrado.' });
     if (!await validarRelacoesDoContrato(dados, res)) return;
     if (await temConflitoDeContrato(dados, id)) {
-      return res.status(409).json({ mensagem: 'This property already has an overlapping active rental contract.' });
+      return res.status(409).json({ mensagem: 'Este imóvel já possui um contrato de locação ativo em período coincidente.' });
     }
     await pool.query(
       `UPDATE rental_contracts SET property_id = ?, renter_id = ?, start_date = ?, end_date = ?,
@@ -358,7 +357,7 @@ async function atualizarContrato(req, res) {
       [dados.property_id, dados.renter_id, dados.start_date, dados.end_date, dados.monthly_rent, dados.status, dados.notes, id]
     );
     const [contratos] = await pool.query(`${selectContrato} WHERE rc.id = ?`, [id]);
-    return res.status(200).json({ mensagem: 'Rental contract updated successfully.', contrato: contratos[0] });
+    return res.status(200).json({ mensagem: 'Contrato de locação atualizado com sucesso.', contrato: contratos[0] });
   } catch (erro) {
     console.log('Erro ao atualizar contrato: ', erro);
     return res.status(500).json({ mensagem: 'Erro ao atualizar contrato.' });
@@ -367,11 +366,11 @@ async function atualizarContrato(req, res) {
 
 async function excluirContrato(req, res) {
   const id = validarIdContrato(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The contract ID must be a positive integer.' });
+  if (!id) return res.status(400).json({ mensagem: 'O ID do contrato deve ser um número inteiro positivo.' });
   try {
     const [resultado] = await pool.query('DELETE FROM rental_contracts WHERE id = ?', [id]);
-    if (resultado.affectedRows === 0) return res.status(404).json({ mensagem: 'Rental contract not found.' });
-    return res.status(200).json({ mensagem: 'Rental contract deleted successfully.' });
+    if (resultado.affectedRows === 0) return res.status(404).json({ mensagem: 'Contrato de locação não encontrado.' });
+    return res.status(200).json({ mensagem: 'Contrato de locação excluído com sucesso.' });
   } catch (erro) {
     console.log('Erro ao excluir contrato: ', erro);
     return res.status(500).json({ mensagem: 'Erro ao excluir contrato.' });
@@ -395,10 +394,10 @@ async function listarLocatarios(_req, res) {
 
 async function buscarLocatarioPorId(req, res) {
   const id = validarIdLocatario(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The renter ID must be a positive integer.' });
+  if (!id) return res.status(400).json({ mensagem: 'O ID do locatário deve ser um número inteiro positivo.' });
   try {
     const [locatarios] = await pool.query('SELECT * FROM renters WHERE id = ?', [id]);
-    if (locatarios.length === 0) return res.status(404).json({ mensagem: 'Renter not found.' });
+    if (locatarios.length === 0) return res.status(404).json({ mensagem: 'Locatário não encontrado.' });
     return res.status(200).json(locatarios[0]);
   } catch (erro) {
     console.log('Erro ao buscar locatário: ', erro);
@@ -414,9 +413,9 @@ async function cadastrarLocatario(req, res) {
       [first_name, last_name, email, phone]
     );
     const [locatarios] = await pool.query('SELECT * FROM renters WHERE id = ?', [resultado.insertId]);
-    return res.status(201).json({ mensagem: 'Renter created successfully.', locatario: locatarios[0] });
+    return res.status(201).json({ mensagem: 'Locatário cadastrado com sucesso.', locatario: locatarios[0] });
   } catch (erro) {
-    if (erro.code === 'ER_DUP_ENTRY') return res.status(409).json({ mensagem: 'A renter with this email already exists.' });
+    if (erro.code === 'ER_DUP_ENTRY') return res.status(409).json({ mensagem: 'Já existe um locatário cadastrado com este e-mail.' });
     console.log('Erro ao cadastrar locatário: ', erro);
     return res.status(500).json({ mensagem: 'Erro ao cadastrar locatário.' });
   }
@@ -424,19 +423,19 @@ async function cadastrarLocatario(req, res) {
 
 async function atualizarLocatario(req, res) {
   const id = validarIdLocatario(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The renter ID must be a positive integer.' });
+  if (!id) return res.status(400).json({ mensagem: 'O ID do locatário deve ser um número inteiro positivo.' });
   const { first_name, last_name, email, phone } = req.body;
   try {
     const [existentes] = await pool.query('SELECT id FROM renters WHERE id = ?', [id]);
-    if (existentes.length === 0) return res.status(404).json({ mensagem: 'Renter not found.' });
+    if (existentes.length === 0) return res.status(404).json({ mensagem: 'Locatário não encontrado.' });
     await pool.query(
       'UPDATE renters SET first_name = ?, last_name = ?, email = ?, phone = ? WHERE id = ?',
       [first_name, last_name, email, phone, id]
     );
     const [locatarios] = await pool.query('SELECT * FROM renters WHERE id = ?', [id]);
-    return res.status(200).json({ mensagem: 'Renter updated successfully.', locatario: locatarios[0] });
+    return res.status(200).json({ mensagem: 'Locatário atualizado com sucesso.', locatario: locatarios[0] });
   } catch (erro) {
-    if (erro.code === 'ER_DUP_ENTRY') return res.status(409).json({ mensagem: 'A renter with this email already exists.' });
+    if (erro.code === 'ER_DUP_ENTRY') return res.status(409).json({ mensagem: 'Já existe um locatário cadastrado com este e-mail.' });
     console.log('Erro ao atualizar locatário: ', erro);
     return res.status(500).json({ mensagem: 'Erro ao atualizar locatário.' });
   }
@@ -444,13 +443,13 @@ async function atualizarLocatario(req, res) {
 
 async function excluirLocatario(req, res) {
   const id = validarIdLocatario(req.params.id);
-  if (!id) return res.status(400).json({ mensagem: 'The renter ID must be a positive integer.' });
+  if (!id) return res.status(400).json({ mensagem: 'O ID do locatário deve ser um número inteiro positivo.' });
   try {
     const [resultado] = await pool.query('DELETE FROM renters WHERE id = ?', [id]);
-    if (resultado.affectedRows === 0) return res.status(404).json({ mensagem: 'Renter not found.' });
-    return res.status(200).json({ mensagem: 'Renter deleted successfully.' });
+    if (resultado.affectedRows === 0) return res.status(404).json({ mensagem: 'Locatário não encontrado.' });
+    return res.status(200).json({ mensagem: 'Locatário excluído com sucesso.' });
   } catch (erro) {
-    if (erro.code === 'ER_ROW_IS_REFERENCED_2') return res.status(409).json({ mensagem: 'This renter has rental contract history and cannot be deleted.' });
+    if (erro.code === 'ER_ROW_IS_REFERENCED_2') return res.status(409).json({ mensagem: 'Este locatário possui histórico de contratos de locação e não pode ser excluído.' });
     console.log('Erro ao excluir locatário: ', erro);
     return res.status(500).json({ mensagem: 'Erro ao excluir locatário.' });
   }

@@ -315,6 +315,7 @@ function fact(label, value) {
 function renderTasks(tasks) {
   const taskList = document.querySelector('#task-list');
   const openTasks = tasks.filter((task) => task.status !== 'Completed');
+  const prioridadeEmPortugues = { Low: 'Baixa', Medium: 'Média', High: 'Alta' };
   document.querySelector('#task-count').textContent = openTasks.length ? `${openTasks.length} pendente(s)` : '';
   if (!openTasks.length) {
     taskList.innerHTML = '<p class="up-to-date">Este imóvel está totalmente em dia.</p>';
@@ -323,7 +324,7 @@ function renderTasks(tasks) {
   taskList.innerHTML = tasks.map((task) => `
     <article class="task-item ${task.status === 'Completed' ? 'completed' : ''}">
       <span class="task-indicator" aria-hidden="true"></span>
-      <div><h4>${escapeHtml(task.title)} <span class="task-priority">${escapeHtml(task.priority)}</span></h4>
+      <div><h4>${escapeHtml(task.title)} <span class="task-priority">${escapeHtml(prioridadeEmPortugues[task.priority] || task.priority)}</span></h4>
         <p>${escapeHtml(task.description || 'Sem detalhes adicionais.')}${task.due_date ? ` · Prazo: ${formatDate(task.due_date)}` : ''}</p>
       </div>
     </article>`).join('');

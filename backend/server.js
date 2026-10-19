@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(express.static(path.resolve(backendDirectory, '../frontend')));
 
 app.get('/api/health', (_request, response) => {
-  response.json({ status: 'ok', message: 'Real Estate API is running.' });
+  response.json({ status: 'ok', message: 'A API imobiliária está em execução.' });
 });
 app.use('/api/properties', propertiesRouter);
 app.use('/api/renters', rentersRouter);
@@ -36,7 +36,7 @@ async function iniciarServidor() {
   try {
     await pool.query('SELECT 1');
     app.listen(port, () => {
-      console.log(`Real Estate Agency is ready at http://localhost:${port}`);
+      console.log(`O sistema imobiliário está pronto em http://localhost:${port}`);
     });
   } catch (erro) {
     console.log('Erro ao conectar ao banco de dados: ', erro);

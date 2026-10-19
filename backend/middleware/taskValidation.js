@@ -12,16 +12,16 @@ function validarTarefa(req, res, next) {
   const erros = [];
   const propertyId = Number(dados.property_id);
 
-  if (!Number.isInteger(propertyId) || propertyId < 1) erros.push('property_id must be a positive integer.');
-  if (typeof dados.title !== 'string' || !dados.title.trim()) erros.push('title is required.');
-  if (typeof dados.title === 'string' && dados.title.trim().length > 120) erros.push('title cannot exceed 120 characters.');
-  if (dados.description !== undefined && typeof dados.description !== 'string') erros.push('description must be text.');
-  if (typeof dados.description === 'string' && dados.description.length > 500) erros.push('description cannot exceed 500 characters.');
-  if (!prioridades.includes(dados.priority ?? 'Medium')) erros.push(`priority must be one of: ${prioridades.join(', ')}.`);
-  if (dados.due_date !== undefined && dados.due_date !== null && dados.due_date !== '' && !dataValida(dados.due_date)) erros.push('due_date must be a valid date in YYYY-MM-DD format or null.');
-  if (!statusDasTarefas.includes(dados.status ?? 'Open')) erros.push(`status must be one of: ${statusDasTarefas.join(', ')}.`);
+  if (!Number.isInteger(propertyId) || propertyId < 1) erros.push('O campo property_id deve ser um número inteiro positivo.');
+  if (typeof dados.title !== 'string' || !dados.title.trim()) erros.push('O título da tarefa é obrigatório.');
+  if (typeof dados.title === 'string' && dados.title.trim().length > 120) erros.push('O título não pode ter mais de 120 caracteres.');
+  if (dados.description !== undefined && typeof dados.description !== 'string') erros.push('A descrição deve ser um texto.');
+  if (typeof dados.description === 'string' && dados.description.length > 500) erros.push('A descrição não pode ter mais de 500 caracteres.');
+  if (!prioridades.includes(dados.priority ?? 'Medium')) erros.push(`O campo priority deve ser um destes valores: ${prioridades.join(', ')}.`);
+  if (dados.due_date !== undefined && dados.due_date !== null && dados.due_date !== '' && !dataValida(dados.due_date)) erros.push('O campo due_date deve ser uma data válida no formato AAAA-MM-DD ou nulo.');
+  if (!statusDasTarefas.includes(dados.status ?? 'Open')) erros.push(`O campo status deve ser um destes valores: ${statusDasTarefas.join(', ')}.`);
 
-  if (erros.length) return res.status(400).json({ mensagem: 'Please correct the task information.', detalhes: erros });
+  if (erros.length) return res.status(400).json({ mensagem: 'Corrija os dados da tarefa.', detalhes: erros });
   req.body = {
     property_id: propertyId,
     title: dados.title.trim(),

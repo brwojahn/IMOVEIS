@@ -15,28 +15,28 @@ function validarImovel(req, res, next) {
   const vendaAtiva = dados.is_for_sale === true || dados.is_for_sale === 1 || dados.is_for_sale === '1' || dados.is_for_sale === 'true';
 
   for (const campo of ['title', 'address', 'city', 'state']) {
-    if (typeof dados[campo] !== 'string' || !dados[campo].trim()) erros.push(`${campo} is required.`);
+    if (typeof dados[campo] !== 'string' || !dados[campo].trim()) erros.push(`O campo ${campo} é obrigatório.`);
   }
   const limites = { title: 120, address: 180, city: 100, description: 60000 };
   for (const [campo, limite] of Object.entries(limites)) {
-    if (typeof dados[campo] === 'string' && dados[campo].trim().length > limite) erros.push(`${campo} cannot exceed ${limite} characters.`);
+    if (typeof dados[campo] === 'string' && dados[campo].trim().length > limite) erros.push(`O campo ${campo} não pode ter mais de ${limite} caracteres.`);
   }
-  if (typeof dados.state === 'string' && dados.state.trim().length !== 2) erros.push('state must contain exactly 2 characters.');
-  if (typeof dados.postal_code === 'string' && dados.postal_code.trim().length > 10) erros.push('postal_code cannot exceed 10 characters.');
-  if (!tiposDeImovel.includes(dados.property_type)) erros.push(`property_type must be one of: ${tiposDeImovel.join(', ')}.`);
-  if (typeof dados.is_for_sale !== 'boolean' && ![0, 1, '0', '1', 'true', 'false'].includes(dados.is_for_sale)) erros.push('is_for_sale must be true or false.');
-  if (vendaAtiva && dados.sale_price !== null && dados.sale_price !== undefined && dados.sale_price !== '' && !numeroNaoNegativo(dados.sale_price)) erros.push('sale_price must be a non-negative number or null.');
-  if (vendaAtiva && Number(dados.sale_price) > 9999999999.99) erros.push('sale_price exceeds the maximum supported amount.');
-  if (dados.bedrooms !== undefined && !inteiroNaoNegativo(dados.bedrooms)) erros.push('bedrooms must be a non-negative whole number.');
-  if (dados.bathrooms !== undefined && !inteiroNaoNegativo(dados.bathrooms)) erros.push('bathrooms must be a non-negative whole number.');
-  if (dados.bedrooms !== undefined && Number(dados.bedrooms) > 255) erros.push('bedrooms cannot exceed 255.');
-  if (dados.bathrooms !== undefined && Number(dados.bathrooms) > 255) erros.push('bathrooms cannot exceed 255.');
-  if (dados.area_sqm !== null && dados.area_sqm !== undefined && dados.area_sqm !== '' && (!Number.isFinite(Number(dados.area_sqm)) || Number(dados.area_sqm) <= 0)) erros.push('area_sqm must be a positive number or null.');
-  if (dados.area_sqm !== null && dados.area_sqm !== undefined && dados.area_sqm !== '' && Number(dados.area_sqm) > 9999999.99) erros.push('area_sqm exceeds the maximum supported area.');
-  if (!statusDoImovel.includes(dados.status ?? 'Active')) erros.push(`status must be one of: ${statusDoImovel.join(', ')}.`);
-  if ((dados.status ?? 'Active') !== 'Active' && vendaAtiva) erros.push('Only active properties can be listed for sale.');
+  if (typeof dados.state === 'string' && dados.state.trim().length !== 2) erros.push('O campo state deve conter exatamente 2 caracteres.');
+  if (typeof dados.postal_code === 'string' && dados.postal_code.trim().length > 10) erros.push('O campo postal_code não pode ter mais de 10 caracteres.');
+  if (!tiposDeImovel.includes(dados.property_type)) erros.push(`O campo property_type deve ser um destes valores: ${tiposDeImovel.join(', ')}.`);
+  if (typeof dados.is_for_sale !== 'boolean' && ![0, 1, '0', '1', 'true', 'false'].includes(dados.is_for_sale)) erros.push('O campo is_for_sale deve ser verdadeiro ou falso.');
+  if (vendaAtiva && dados.sale_price !== null && dados.sale_price !== undefined && dados.sale_price !== '' && !numeroNaoNegativo(dados.sale_price)) erros.push('O campo sale_price deve ser um número não negativo ou nulo.');
+  if (vendaAtiva && Number(dados.sale_price) > 9999999999.99) erros.push('O campo sale_price excede o valor máximo permitido.');
+  if (dados.bedrooms !== undefined && !inteiroNaoNegativo(dados.bedrooms)) erros.push('O campo bedrooms deve ser um número inteiro não negativo.');
+  if (dados.bathrooms !== undefined && !inteiroNaoNegativo(dados.bathrooms)) erros.push('O campo bathrooms deve ser um número inteiro não negativo.');
+  if (dados.bedrooms !== undefined && Number(dados.bedrooms) > 255) erros.push('O campo bedrooms não pode ser maior que 255.');
+  if (dados.bathrooms !== undefined && Number(dados.bathrooms) > 255) erros.push('O campo bathrooms não pode ser maior que 255.');
+  if (dados.area_sqm !== null && dados.area_sqm !== undefined && dados.area_sqm !== '' && (!Number.isFinite(Number(dados.area_sqm)) || Number(dados.area_sqm) <= 0)) erros.push('O campo area_sqm deve ser um número positivo ou nulo.');
+  if (dados.area_sqm !== null && dados.area_sqm !== undefined && dados.area_sqm !== '' && Number(dados.area_sqm) > 9999999.99) erros.push('O campo area_sqm excede a área máxima permitida.');
+  if (!statusDoImovel.includes(dados.status ?? 'Active')) erros.push(`O campo status deve ser um destes valores: ${statusDoImovel.join(', ')}.`);
+  if ((dados.status ?? 'Active') !== 'Active' && vendaAtiva) erros.push('Somente imóveis ativos podem ser anunciados para venda.');
 
-  if (erros.length) return res.status(400).json({ mensagem: 'Please correct the property information.', detalhes: erros });
+  if (erros.length) return res.status(400).json({ mensagem: 'Corrija os dados do imóvel.', detalhes: erros });
 
   req.body = {
     title: dados.title.trim(),
