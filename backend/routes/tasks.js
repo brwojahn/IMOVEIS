@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { atualizarTarefa, buscarTarefaPorId, cadastrarTarefa, excluirTarefa, listarTarefas } from '../controllers/tasksController.js';
-import { validarTarefa } from '../../middleware/taskValidation.js';
+import { atualizarTarefa, buscarTarefaPorId, cadastrarTarefa, excluirTarefa, listarTarefas } from '../controllers/imobiliariaController.js';
+import { validarTarefa } from '../middleware/taskValidation.js';
 
 const router = Router();
 

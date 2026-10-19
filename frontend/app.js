@@ -68,7 +68,10 @@ function badgeHtml(property) {
 }
 
 function cardPrice(property) {
-  if (isTrue(property.is_for_sale) && property.sale_price !== null) {
+  if (isTrue(property.is_for_sale) && (property.sale_price === null || property.sale_price === undefined)) {
+    return '<span class="card-price">Sob consulta</span><span class="card-price-note">preço de venda</span>';
+  }
+  if (isTrue(property.is_for_sale)) {
     return `<span class="card-price">${currency.format(Number(property.sale_price))}</span><span class="card-price-note">preço de venda</span>`;
   }
   if (isTrue(property.is_renting) && property.monthly_rent !== null && property.monthly_rent !== undefined) {

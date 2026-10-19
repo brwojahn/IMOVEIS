@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { atualizarLocatario, buscarLocatarioPorId, cadastrarLocatario, excluirLocatario, listarLocatarios } from '../controllers/rentersController.js';
-import { validarLocatario } from '../../middleware/renterValidation.js';
+import { atualizarLocatario, buscarLocatarioPorId, cadastrarLocatario, excluirLocatario, listarLocatarios } from '../controllers/imobiliariaController.js';
+import { validarLocatario } from '../middleware/renterValidation.js';
 
 const router = Router();
 

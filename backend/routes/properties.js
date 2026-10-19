@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { atualizarImovel, buscarImovelPorId, cadastrarImovel, excluirImovel, listarImoveis } from '../controllers/propertiesController.js';
-import { validarImovel } from '../../middleware/propertyValidation.js';
+import { atualizarImovel, buscarImovelPorId, cadastrarImovel, excluirImovel, listarImoveis } from '../controllers/imobiliariaController.js';
+import { validarImovel } from '../middleware/propertyValidation.js';
 
 const router = Router();
 

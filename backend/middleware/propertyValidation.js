@@ -29,6 +29,8 @@ function validarImovel(req, res, next) {
   if (vendaAtiva && Number(dados.sale_price) > 9999999999.99) erros.push('sale_price exceeds the maximum supported amount.');
   if (dados.bedrooms !== undefined && !inteiroNaoNegativo(dados.bedrooms)) erros.push('bedrooms must be a non-negative whole number.');
   if (dados.bathrooms !== undefined && !inteiroNaoNegativo(dados.bathrooms)) erros.push('bathrooms must be a non-negative whole number.');
+  if (dados.bedrooms !== undefined && Number(dados.bedrooms) > 255) erros.push('bedrooms cannot exceed 255.');
+  if (dados.bathrooms !== undefined && Number(dados.bathrooms) > 255) erros.push('bathrooms cannot exceed 255.');
   if (dados.area_sqm !== null && dados.area_sqm !== undefined && dados.area_sqm !== '' && (!Number.isFinite(Number(dados.area_sqm)) || Number(dados.area_sqm) <= 0)) erros.push('area_sqm must be a positive number or null.');
   if (dados.area_sqm !== null && dados.area_sqm !== undefined && dados.area_sqm !== '' && Number(dados.area_sqm) > 9999999.99) erros.push('area_sqm exceeds the maximum supported area.');
   if (!statusDoImovel.includes(dados.status ?? 'Active')) erros.push(`status must be one of: ${statusDoImovel.join(', ')}.`);

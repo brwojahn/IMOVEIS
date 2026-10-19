@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { atualizarContrato, buscarContratoPorId, cadastrarContrato, excluirContrato, listarContratos } from '../controllers/contractsController.js';
-import { validarContrato } from '../../middleware/contractValidation.js';
+import { atualizarContrato, buscarContratoPorId, cadastrarContrato, excluirContrato, listarContratos } from '../controllers/imobiliariaController.js';
+import { validarContrato } from '../middleware/contractValidation.js';
 
 const router = Router();
 
